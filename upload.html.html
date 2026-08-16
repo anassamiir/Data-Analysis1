@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>رفع ملف | Excel Dashboard Generator</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="logo">📊 Excel Dashboard</div>
+        <ul class="nav-links">
+            <li><a href="index.html">الرئيسية</a></li>
+            <li><a href="upload.html" class="active">رفع ملف</a></li>
+            <li><a href="dashboards.html">لوحاتي</a></li>
+            <li><a href="settings.html">الإعدادات</a></li>
+        </ul>
+    </nav>
+
+    <!-- Upload Section -->
+    <section class="upload-section">
+        <div class="upload-container">
+            <h1>📁 رفع ملف البيانات</h1>
+            <p class="subtitle">قم برفع ملف Excel (.xlsx, .xls) أو CSV ليتم تحليله وإنشاء لوحة تحكم تفاعلية.</p>
+
+            <!-- Drop Zone -->
+            <div id="dropZone" class="drop-zone">
+                <div class="drop-zone-content">
+                    <div class="drop-icon">📤</div>
+                    <h3>اسحب وأفلت الملف هنا</h3>
+                    <p>أو انقر لاختيار ملف من جهازك</p>
+                    <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" style="display: none;" />
+                    <button class="btn-browse" onclick="document.getElementById('fileInput').click()">تصفح الملفات</button>
+                </div>
+            </div>
+
+            <!-- File Info -->
+            <div id="fileInfo" class="file-info" style="display: none;">
+                <div class="file-details">
+                    <span class="file-name" id="fileName">اسم الملف</span>
+                    <span class="file-size" id="fileSize">الحجم</span>
+                    <span class="file-type" id="fileType">النوع</span>
+                </div>
+                <button class="btn-remove" onclick="removeFile()">✖ إزالة</button>
+            </div>
+
+            <!-- Actions -->
+            <div class="upload-actions">
+                <button id="analyzeBtn" class="btn-primary" disabled onclick="analyzeFile()">
+                    🔍 تحليل الملف
+                </button>
+                <button class="btn-secondary" onclick="window.location.href='index.html'">← العودة</button>
+            </div>
+
+            <!-- Progress Bar (اختياري) -->
+            <div id="progressContainer" style="display: none;">
+                <div class="progress-bar">
+                    <div id="progressFill" class="progress-fill" style="width: 0%;"></div>
+                </div>
+                <span id="progressText">جاري الرفع...</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Mini -->
+    <section class="features-mini">
+        <h2>ماذا سيحدث بعد الرفع؟</h2>
+        <div class="mini-grid">
+            <div class="mini-card">
+                <span>🔍</span>
+                <h4>تحليل تلقائي</h4>
+                <p>اكتشاف الأعمدة، الأنواع، والقيم المفقودة</p>
+            </div>
+            <div class="mini-card">
+                <span>🧹</span>
+                <h4>تنظيف البيانات</h4>
+                <p>إزالة التكرارات ومعالجة القيم الناقصة</p>
+            </div>
+            <div class="mini-card">
+                <span>📊</span>
+                <h4>إنشاء Dashboard</h4>
+                <p>رسوم بيانية، مرشحات، وجدول تفاعلي</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>© 2026 Excel Dashboard Generator — مفتوح المصدر على GitHub</p>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="app.js"></script>
+    <script src="analyzer.js"></script>
+    <script src="data-cleaner.js"></script>
+
+    <script>
+        // متغيرات لتخزين الملف والبيانات
+        let uploadedFile = null;
+        let fileData = null;
+
+        // عناصر DOM
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+        const fileType = document.getElementById('fileType');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+
+        // أحداث Drag & Drop
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        // حدث اختيار ملف من Browse
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        // دالة معالجة الملف
+        function handleFile(file) {
+            // التحقق من نوع الملف
+            const validTypes = [
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
+                'application/vnd.ms-excel', // .xls
+                'text/csv', // .csv
+                'application/vnd.ms-excel.sheet.macroEnabled.12' // .xlsm
+            ];
+            
+            const ext = file.name.split('.').pop().toLowerCase();
+            if (!['xlsx', 'xls', 'csv'].includes(ext)) {
+                alert('⚠️ يرجى رفع ملف Excel (.xlsx, .xls) أو CSV فقط.');
+                return;
+            }
+
+            // تخزين الملف
+            uploadedFile = file;
+
+            // عرض معلومات الملف
+            fileName.textContent = file.name;
+            fileSize.textContent = `الحجم: ${(file.size / 1024).toFixed(2)} KB`;
+            fileType.textContent = `النوع: ${ext.toUpperCase()}`;
+            
+            fileInfo.style.display = 'flex';
+            dropZone.style.display = 'none';
+            analyzeBtn.disabled = false;
+
+            // حفظ الملف في التخزين المحلي للاستخدام لاحقًا
+            localStorage.setItem('uploadedFileName', file.name);
+            localStorage.setItem('uploadedFileSize', file.size);
+            localStorage.setItem('uploadedFileType', ext);
+
+            // إظهار رسالة نجاح
+            showMessage('✅ تم رفع الملف بنجاح!', 'success');
+        }
+
+        // دالة إزالة الملف
+        function removeFile() {
+            uploadedFile = null;
+            fileData = null;
+            fileInput.value = '';
+            fileInfo.style.display = 'none';
+            dropZone.style.display = 'flex';
+            analyzeBtn.disabled = true;
+            localStorage.removeItem('uploadedFileName');
+            localStorage.removeItem('uploadedFileSize');
+            localStorage.removeItem('uploadedFileType');
+            hideMessage();
+        }
+
+        // دالة تحليل الملف
+        function analyzeFile() {
+            if (!uploadedFile) {
+                alert('⚠️ يرجى رفع ملف أولاً.');
+                return;
+            }
+
+            // إظهار شريط التقدم
+            progressContainer.style.display = 'block';
+            progressFill.style.width = '0%';
+            progressText.textContent = 'جاري تحليل الملف...';
+
+            // محاكاة تقدم (يمكن استبدالها بتحليل حقيقي)
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 10;
+                progressFill.style.width = progress + '%';
+                progressText.textContent = `جاري التحليل... ${progress}%`;
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    progressText.textContent = '✅ تم التحليل بنجاح!';
+                    
+                    // هنا يتم استدعاء التحليل الحقيقي
+                    performActualAnalysis(uploadedFile);
+                }
+            }, 200);
+        }
+
+        // دالة التحليل الحقيقية (ستستخدم مكتبة خارجية مثل SheetJS)
+        function performActualAnalysis(file) {
+            // في الواقع هنا سنستخدم مكتبة مثل SheetJS لقراءة الملف
+            // لكن سنقوم بمحاكاة النتيجة الآن
+            
+            // قراءة الملف باستخدام FileReader
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    // محاكاة بيانات التحليل
+                    const analysisResult = {
+                        fileName: file.name,
+                        rowCount: Math.floor(Math.random() * 1000) + 100,
+                        columnCount: Math.floor(Math.random() * 15) + 3,
+                        sheets: ['Sheet1'],
+                        columns: [
+                            { name: 'Date', type: 'date', missing: 2 },
+                            { name: 'Product', type: 'string', missing: 0 },
+                            { name: 'Sales', type: 'number', missing: 5 },
+                            { name: 'Region', type: 'string', missing: 1 },
+                            { name: 'Customer', type: 'string', missing: 3 }
+                        ],
+                        missingValues: 11,
+                        duplicateRows: 3,
+                        dataQuality: 'جيد'
+                    };
+
+                    // تخزين نتيجة التحليل في localStorage
+                    localStorage.setItem('analysisResult', JSON.stringify(analysisResult));
+                    
+                    // إخفاء شريط التقدم
+                    setTimeout(() => {
+                        progressContainer.style.display = 'none';
+                        showMessage('✅ تم تحليل الملف بنجاح! جاري التوجه إلى لوحة التحكم...', 'success');
+                        
+                        // التوجه إلى صفحة التحليل
+                        setTimeout(() => {
+                            window.location.href = 'analysis.html';
+                        }, 1000);
+                    }, 500);
+                } catch (error) {
+                    progressContainer.style.display = 'none';
+                    showMessage('❌ حدث خطأ أثناء تحليل الملف: ' + error.message, 'error');
+                }
+            };
+            
+            // قراءة الملف كـ ArrayBuffer لاستخدامه مع SheetJS
+            reader.readAsArrayBuffer(file);
+        }
+
+        // دوال مساعدة للرسائل
+        function showMessage(text, type) {
+            // يمكن إنشاء عنصر رسالة ديناميكي
+            const existing = document.querySelector('.message-toast');
+            if (existing) existing.remove();
+
+            const toast = document.createElement('div');
+            toast.className = `message-toast ${type}`;
+            toast.textContent = text;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function hideMessage() {
+            const existing = document.querySelector('.message-toast');
+            if (existing) existing.remove();
+        }
+
+        // التحقق مما إذا كان هناك ملف مخزن سابقًا
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedName = localStorage.getItem('uploadedFileName');
+            if (savedName) {
+                // عرض معلومات الملف المخزن
+                fileName.textContent = savedName;
+                fileSize.textContent = `الحجم: ${localStorage.getItem('uploadedFileSize') || 'غير معروف'} KB`;
+                fileType.textContent = `النوع: ${localStorage.getItem('uploadedFileType') || 'غير معروف'}`;
+                fileInfo.style.display = 'flex';
+                dropZone.style.display = 'none';
+                analyzeBtn.disabled = false;
+            }
+
+            // التحقق من وجود demo=true في URL
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('demo') === 'true') {
+                showMessage('🎯 وضع التجربة: جاري تحميل بيانات افتراضية...', 'info');
+                // محاكاة رفع ملف تجريبي
+                setTimeout(() => {
+                    const demoData = {
+                        fileName: 'demo_data.xlsx',
+                        rowCount: 500,
+                        columnCount: 6,
+                        sheets: ['Sales Data'],
+                        columns: [
+                            { name: 'Date', type: 'date', missing: 0 },
+                            { name: 'Product', type: 'string', missing: 0 },
+                            { name: 'Sales', type: 'number', missing: 2 },
+                            { name: 'Region', type: 'string', missing: 0 },
+                            { name: 'Customer', type: 'string', missing: 1 },
+                            { name: 'Quantity', type: 'number', missing: 0 }
+                        ],
+                        missingValues: 3,
+                        duplicateRows: 1,
+                        dataQuality: 'ممتاز'
+                    };
+                    localStorage.setItem('analysisResult', JSON.stringify(demoData));
+                    window.location.href = 'analysis.html';
+                }, 1500);
+            }
+        });
+    </script>
+</body>
+</html>

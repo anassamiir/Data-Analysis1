@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Excel Dashboard Generator</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="logo">📊 Excel Dashboard</div>
+        <ul class="nav-links">
+            <li><a href="index.html" class="active">الرئيسية</a></li>
+            <li><a href="upload.html">رفع ملف</a></li>
+            <li><a href="dashboards.html">لوحاتي</a></li>
+            <li><a href="settings.html">الإعدادات</a></li>
+        </ul>
+        <button class="btn-demo" onclick="demoMode()">تجربة Demo</button>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero">
+        <div class="hero-content">
+            <h1>🚀 أنشئ لوحة تحكم تفاعلية من ملفات Excel تلقائيًا</h1>
+            <p class="subtitle">
+                ارفع ملفك، وسنقوم بتحليل البيانات، تنظيفها، وإنشاء Dashboard مخصص مع رسوم بيانية، مرشحات، وجداول تفاعلية في ثوانٍ.
+            </p>
+            <div class="hero-buttons">
+                <a href="upload.html" class="btn-primary">📁 ارفع ملف Excel الآن</a>
+                <button class="btn-secondary" onclick="demoMode()">🎯 تجربة Demo</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Features Section -->
+    <section class="features">
+        <h2>ماذا يقدم لك هذا التطبيق؟</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="icon">📂</div>
+                <h3>رفع سهل</h3>
+                <p>اسحب وأفلت ملفات Excel أو CSV، أو اخترها من جهازك.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">🧹</div>
+                <h3>تحليل وتنظيف</h3>
+                <p>يكشف الأعمدة، أنواع البيانات، القيم المفقودة، والتكرارات.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">📈</div>
+                <h3>Dashboard تلقائي</h3>
+                <p>يختار KPIs ورسوم بيانية ومرشحات مناسبة لبياناتك.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">💾</div>
+                <h3>حفظ وتصدير</h3>
+                <p>احفظ لوحاتك، وعد إليها لاحقًا، أو صدرها للآخرين.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="how-it-works">
+        <h2>كيف يعمل؟</h2>
+        <div class="steps">
+            <div class="step">
+                <span class="step-number">1</span>
+                <h4>رفع الملف</h4>
+                <p>اختر ملف Excel أو CSV من جهازك.</p>
+            </div>
+            <div class="step">
+                <span class="step-number">2</span>
+                <h4>تحليل البيانات</h4>
+                <p>النظام يقرأ الأعمدة ويكشف أنواعها ونقاط الضعف.</p>
+            </div>
+            <div class="step">
+                <span class="step-number">3</span>
+                <h4>إنشاء Dashboard</h4>
+                <p>تلقائيًا يظهر لك رسوم، جدول، ومرشحات تفاعلية.</p>
+            </div>
+            <div class="step">
+                <span class="step-number">4</span>
+                <h4>تخصيص وحفظ</h4>
+                <p>عدل الألوان، أضف رسومًا، واحفظ لوحتك للرجوع إليها.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>© 2026 Excel Dashboard Generator — مفتوح المصدر على GitHub</p>
+    </footer>
+
+    <script src="app.js"></script>
+    <script>
+        // وظيفة تجريبية للـ Demo
+        function demoMode() {
+            // هنا ممكن نوجه المستخدم لصفحة التحليل ببيانات افتراضية
+            // أو نفتح upload.html مع رسالة تجريبية
+            window.location.href = 'upload.html?demo=true';
+        }
+    </script>
+</body>
+</html>

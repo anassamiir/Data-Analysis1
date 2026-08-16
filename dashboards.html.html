@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>لوحاتي | Excel Dashboard Generator</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="logo">📊 Excel Dashboard</div>
+        <ul class="nav-links">
+            <li><a href="index.html">الرئيسية</a></li>
+            <li><a href="upload.html">رفع ملف</a></li>
+            <li><a href="dashboard.html">لوحة التحكم</a></li>
+            <li><a href="data.html">البيانات</a></li>
+            <li><a href="dashboards.html" class="active">لوحاتي</a></li>
+            <li><a href="settings.html">الإعدادات</a></li>
+        </ul>
+        <div class="nav-actions">
+            <button class="btn-primary" onclick="createNewDashboard()">➕ إنشاء لوحة جديدة</button>
+        </div>
+    </nav>
+
+    <!-- Dashboards Header -->
+    <header class="dashboards-header">
+        <div class="header-content">
+            <h1>📂 لوحات التحكم المحفوظة</h1>
+            <p class="subtitle">جميع لوحات التحكم التي قمت بحفظها، يمكنك فتحها أو تعديلها أو حذفها</p>
+        </div>
+        <div class="header-actions">
+            <div class="search-box">
+                <input type="text" id="searchDashboards" placeholder="🔍 بحث في اللوحات..." oninput="filterDashboards()" />
+            </div>
+            <select id="sortDashboards" onchange="filterDashboards()">
+                <option value="newest">الأحدث أولاً</option>
+                <option value="oldest">الأقدم أولاً</option>
+                <option value="name">حسب الاسم (أ-ي)</option>
+                <option value="name-desc">حسب الاسم (ي-أ)</option>
+            </select>
+        </div>
+    </header>
+
+    <!-- Dashboards Grid -->
+    <section class="dashboards-grid-section">
+        <div id="dashboardsContainer" class="dashboards-grid">
+            <!-- سيتم عرض اللوحات هنا -->
+            <div class="empty-state">
+                <div class="empty-icon">📊</div>
+                <h3>لا توجد لوحات محفوظة</h3>
+                <p>ابدأ برفع ملف Excel أو إنشاء لوحة تحكم جديدة.</p>
+                <button class="btn-primary" onclick="window.location.href='upload.html'">📁 رفع ملف الآن</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>© 2026 Excel Dashboard Generator — مفتوح المصدر على GitHub</p>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="app.js"></script>
+    <script src="dashboard.js"></script>
+
+    <script>
+        // متغيرات لتخزين اللوحات
+        let dashboards = [];
+        let filteredDashboards = [];
+
+        // تهيئة الصفحة عند التحميل
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDashboards();
+        });
+
+        // دالة تحميل اللوحات من التخزين
+        function loadDashboards() {
+            // محاولة تحميل من localStorage
+            const saved = localStorage.getItem('savedDashboards');
+            if (saved) {
+                try {
+                    dashboards = JSON.parse(saved);
+                } catch (e) {
+                    dashboards = [];
+                }
+            } else {
+                // إذا لم توجد بيانات، إنشاء بيانات تجريبية
+                dashboards = generateDemoDashboards();
+                localStorage.setItem('savedDashboards', JSON.stringify(dashboards));
+            }
+
+            filterDashboards();
+        }
+
+        // دالة إنشاء بيانات تجريبية
+        function generateDemoDashboards() {
+            const now = new Date();
+            const oneDay = 24 * 60 * 60 * 1000;
+
+            return [
+                {
+                    id: 'dash_001',
+                    name: 'مبيعات الربع الأول',
+                    description: 'تحليل مبيعات المنتجات في الربع الأول من العام',
+                    createdAt: new Date(now.getTime() - 5 * oneDay).toISOString(),
+                    updatedAt: new Date(now.getTime() - 2 * oneDay).toISOString(),
+                    fileSource: 'sales_q1.xlsx',
+                    rowCount: 450,
+                    columnCount: 8,
+                    theme: 'blue',
+                    tags: ['مبيعات', 'ربع سنوي', 'منتجات'],
+                    isFavorite: true,
+                    chartCount: 6,
+                    kpiCount: 4
+                },
+                {
+                    id: 'dash_002',
+                    name: 'أداء الموظفين',
+                    description: 'تقييم أداء الموظفين حسب المؤشرات الرئيسية',
+                    createdAt: new Date(now.getTime() - 12 * oneDay).toISOString(),
+                    updatedAt: new Date(now.getTime() - 1 * oneDay).toISOString(),
+                    fileSource: 'employees_performance.xlsx',
+                    rowCount: 120,
+                    columnCount: 6,
+                    theme: 'green',
+                    tags: ['موارد بشرية', 'أداء', 'تقييم'],
+                    isFavorite: false,
+                    chartCount: 4,
+                    kpiCount: 3
+                },
+                {
+                    id: 'dash_003',
+                    name: 'تحليل العملاء',
+                    description: 'توزيع العملاء حسب المناطق والشرائح',
+                    createdAt: new Date(now.getTime() - 20 * oneDay).toISOString(),
+                    updatedAt: new Date(now.getTime() - 3 * oneDay).toISOString(),
+                    fileSource: 'customer_analysis.xlsx',
+                    rowCount: 890,
+                    columnCount: 5,
+                    theme: 'dark',
+                    tags: ['عملاء', 'تسويق', 'مناطق'],
+                    isFavorite: true,
+                    chartCount: 5,
+                    kpiCount: 3
+                },
+                {
+                    id: 'dash_004',
+                    name: 'مخزون المستودعات',
+                    description: 'مراقبة مستويات المخزون في المستودعات المختلفة',
+                    createdAt: new Date(now.getTime() - 30 * oneDay).toISOString(),
+                    updatedAt: new Date(now.getTime() - 7 * oneDay).toISOString(),
+                    fileSource: 'inventory_warehouses.xlsx',
+                    rowCount: 320,
+                    columnCount: 7,
+                    theme: 'light',
+                    tags: ['مخزون', 'مستودعات', 'لوجستيات'],
+                    isFavorite: false,
+                    chartCount: 3,
+                    kpiCount: 5
+                },
+                {
+                    id: 'dash_005',
+                    name: 'تحليل المشروع X',
+                    description: 'متابعة تقدم المشروع X وتوزيع المهام',
+                    createdAt: new Date(now.getTime() - 2 * oneDay).toISOString(),
+                    updatedAt: new Date(now.getTime() - 0.5 * oneDay).toISOString(),
+                    fileSource: 'project_X_data.xlsx',
+                    rowCount: 60,
+                    columnCount: 4,
+                    theme: 'blue',
+                    tags: ['مشاريع', 'متابعة', 'مهام'],
+                    isFavorite: true,
+                    chartCount: 2,
+                    kpiCount: 2
+                }
+            ];
+        }
+
+        // دالة تصفية وترتيب اللوحات
+        function filterDashboards() {
+            const searchTerm = document.getElementById('searchDashboards').value.toLowerCase().trim();
+            const sortOption = document.getElementById('sortDashboards').value;
+
+            // تصفية
+            filteredDashboards = dashboards.filter(dash => {
+                if (!searchTerm) return true;
+                const searchable = `${dash.name} ${dash.description} ${dash.tags.join(' ')} ${dash.fileSource}`.toLowerCase();
+                return searchable.includes(searchTerm);
+            });
+
+            // ترتيب
+            switch (sortOption) {
+                case 'newest':
+                    filteredDashboards.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                    break;
+                case 'oldest':
+                    filteredDashboards.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+                    break;
+                case 'name':
+                    filteredDashboards.sort((a, b) => a.name.localeCompare(b.name, 'ar'));
+                    break;
+                case 'name-desc':
+                    filteredDashboards.sort((a, b) => b.name.localeCompare(a.name, 'ar'));
+                    break;
+                default:
+                    break;
+            }
+
+            renderDashboards();
+        }
+
+        // دالة عرض اللوحات
+        function renderDashboards() {
+            const container = document.getElementById('dashboardsContainer');
+
+            if (!filteredDashboards || filteredDashboards.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📂</div>
+                        <h3>لا توجد لوحات تطابق البحث</h3>
+                        <p>جرب تغيير كلمات البحث أو إنشاء لوحة جديدة.</p>
+                        <div class="empty-actions">
+                            <button class="btn-primary" onclick="document.getElementById('searchDashboards').value = ''; filterDashboards();">↩ عرض الكل</button>
+                            <button class="btn-secondary" onclick="createNewDashboard()">➕ إنشاء لوحة جديدة</button>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filteredDashboards.map(dash => `
+                <div class="dashboard-card ${dash.isFavorite ? 'favorite' : ''}">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <h3>${dash.name}</h3>
+                            <span class="favorite-star" onclick="toggleFavorite('${dash.id}')">
+                                ${dash.isFavorite ? '⭐' : '☆'}
+                            </span>
+                        </div>
+                        <div class="card-date">
+                            <small>آخر تحديث: ${formatDate(dash.updatedAt)}</small>
+                        </div>
+                    </div>
+                    
+                    <div class="card-body">
+                        <p class="card-description">${dash.description || 'لا يوجد وصف'}</p>
+                        <div class="card-tags">
+                            ${dash.tags ? dash.tags.map(tag => `<span class="tag">${tag}</span>`).join('') : ''}
+                        </div>
+                    </div>
+
+                    <div class="card-stats">
+                        <div class="stat">
+                            <span class="stat-icon">📁</span>
+                            <span class="stat-value">${dash.fileSource}</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-icon">📊</span>
+                            <span class="stat-value">${dash.chartCount} رسوم</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-icon">📈</span>
+                            <span class="stat-value">${dash.kpiCount} مؤشرات</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-icon">📋</span>
+                            <span class="stat-value">${dash.rowCount} صف</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-icon">🎨</span>
+                            <span class="stat-value theme-badge theme-${dash.theme}">${dash.theme}</span>
+                        </div>
+                    </div>
+
+                    <div class="card-actions">
+                        <button class="btn-open" onclick="openDashboard('${dash.id}')">
+                            📂 فتح
+                        </button>
+                        <button class="btn-edit" onclick="editDashboard('${dash.id}')">
+                            ✏️ تعديل
+                        </button>
+                        <button class="btn-duplicate" onclick="duplicateDashboard('${dash.id}')">
+                            📋 نسخ
+                        </button>
+                        <button class="btn-delete" onclick="deleteDashboard('${dash.id}')">
+                            🗑️ حذف
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // دالة تنسيق التاريخ
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            const now = new Date();
+            const diff = now - date;
+            
+            if (diff < 60 * 1000) return 'الآن';
+            if (diff < 60 * 60 * 1000) return `${Math.floor(diff / (60 * 1000))} دقيقة`;
+            if (diff < 24 * 60 * 60 * 1000) return `${Math.floor(diff / (60 * 60 * 1000))} ساعة`;
+            if (diff < 7 * 24 * 60 * 60 * 1000) return `${Math.floor(diff / (24 * 60 * 60 * 1000))} يوم`;
+            
+            return date.toLocaleDateString('ar-EG', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+
+        // دالة فتح لوحة
+        function openDashboard(id) {
+            const dashboard = dashboards.find(d => d.id === id);
+            if (!dashboard) {
+                alert('⚠️ لوحة التحكم غير موجودة.');
+                return;
+            }
+
+            // حفظ معرف اللوحة للاستخدام في صفحة dashboard.html
+            localStorage.setItem('currentDashboardId', id);
+            
+            // محاكاة تحميل بيانات اللوحة
+            const dashboardData = generateDashboardData(dashboard);
+            localStorage.setItem('dashboardData', JSON.stringify(dashboardData));
+            
+            // الانتقال إلى صفحة لوحة التحكم
+            window.location.href = 'dashboard.html';
+        }
+
+        // دالة توليد بيانات اللوحة (محاكاة)
+        function generateDashboardData(dashboard) {
+            return {
+                fileName: dashboard.fileSource,
+                rowCount: dashboard.rowCount,
+                columnCount: dashboard.columnCount,
+                sheets: ['Sheet1'],
+                columns: [
+                    { name: 'Date', type: 'date', missing: 0 },
+                    { name: 'Product', type: 'string', missing: 0 },
+                    { name: 'Sales', type: 'number', missing: 2 },
+                    { name: 'Region', type: 'string', missing: 0 },
+                    { name: 'Customer', type: 'string', missing: 1 }
+                ],
+                missingValues: 3,
+                duplicateRows: 1,
+                dataQuality: 'ممتاز',
+                theme: dashboard.theme,
+                dashboardName: dashboard.name
+            };
+        }
+
+        // دالة تعديل لوحة
+        function editDashboard(id) {
+            const dashboard = dashboards.find(d => d.id === id);
+            if (!dashboard) {
+                alert('⚠️ لوحة التحكم غير موجودة.');
+                return;
+            }
+
+            // فتح نافذة تعديل (يمكن استخدام Modal)
+            const newName = prompt('أدخل الاسم الجديد للوحة:', dashboard.name);
+            if (newName && newName.trim() !== '') {
+                dashboard.name = newName.trim();
+                dashboard.updatedAt = new Date().toISOString();
+                saveDashboards();
+                filterDashboards();
+                showMessage('✅ تم تعديل اسم اللوحة بنجاح!', 'success');
+            }
+        }
+
+        // دالة نسخ لوحة
+        function duplicateDashboard(id) {
+            const dashboard = dashboards.find(d => d.id === id);
+            if (!dashboard) {
+                alert('⚠️ لوحة التحكم غير موجودة.');
+                return;
+            }
+
+            const newDashboard = {
+                ...dashboard,
+                id: 'dash_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+                name: dashboard.name + ' (نسخة)',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                isFavorite: false
+            };
+
+            dashboards.push(newDashboard);
+            saveDashboards();
+            filterDashboards();
+            showMessage('✅ تم نسخ اللوحة بنجاح!', 'success');
+        }
+
+        // دالة حذف لوحة
+        function deleteDashboard(id) {
+            if (!confirm('هل أنت متأكد من حذف هذه اللوحة؟')) return;
+
+            dashboards = dashboards.filter(d => d.id !== id);
+            saveDashboards();
+            filterDashboards();
+            showMessage('🗑️ تم حذف اللوحة بنجاح.', 'info');
+        }
+
+        // دالة تبديل المفضلة
+        function toggleFavorite(id) {
+            const dashboard = dashboards.find(d => d.id === id);
+            if (!dashboard) return;
+            
+            dashboard.isFavorite = !dashboard.isFavorite;
+            saveDashboards();
+            filterDashboards();
+        }
+
+        // دالة حفظ اللوحات في التخزين
+        function saveDashboards() {
+            localStorage.setItem('savedDashboards', JSON.stringify(dashboards));
+        }
+
+        // دالة إنشاء لوحة جديدة
+        function createNewDashboard() {
+            // التوجه إلى صفحة الرفع لإنشاء لوحة جديدة
+            window.location.href = 'upload.html';
+        }
+
+        // دالة مساعدة للرسائل
+        function showMessage(text, type) {
+            const existing = document.querySelector('.message-toast');
+            if (existing) existing.remove();
+
+            const toast = document.createElement('div');
+            toast.className = `message-toast ${type}`;
+            toast.textContent = text;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // استماع لأحداث التخزين (لمزامنة بين النوافذ)
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'savedDashboards') {
+                loadDashboards();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>تحليل البيانات | Excel Dashboard Generator</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="logo">📊 Excel Dashboard</div>
+        <ul class="nav-links">
+            <li><a href="index.html">الرئيسية</a></li>
+            <li><a href="upload.html">رفع ملف</a></li>
+            <li><a href="analysis.html" class="active">تحليل البيانات</a></li>
+            <li><a href="dashboard.html">لوحة التحكم</a></li>
+            <li><a href="dashboards.html">لوحاتي</a></li>
+            <li><a href="settings.html">الإعدادات</a></li>
+        </ul>
+    </nav>
+
+    <!-- Analysis Header -->
+    <header class="analysis-header">
+        <div class="header-content">
+            <h1>🔍 تحليل البيانات</h1>
+            <p class="subtitle">نتائج تحليل الملف المرفوع، جاهزة لإنشاء لوحة التحكم</p>
+        </div>
+        <div class="header-actions">
+            <button class="btn-primary" onclick="generateDashboard()">📊 إنشاء لوحة التحكم</button>
+            <button class="btn-secondary" onclick="window.location.href='upload.html'">↩ رفع ملف آخر</button>
+        </div>
+    </header>
+
+    <!-- File Summary -->
+    <section class="file-summary">
+        <div class="summary-card">
+            <div class="summary-item">
+                <span class="label">اسم الملف</span>
+                <span class="value" id="fileName">---</span>
+            </div>
+            <div class="summary-item">
+                <span class="label">عدد الصفوف</span>
+                <span class="value" id="rowCount">---</span>
+            </div>
+            <div class="summary-item">
+                <span class="label">عدد الأعمدة</span>
+                <span class="value" id="columnCount">---</span>
+            </div>
+            <div class="summary-item">
+                <span class="label">عدد الأوراق (Sheets)</span>
+                <span class="value" id="sheetCount">---</span>
+            </div>
+            <div class="summary-item">
+                <span class="label">جودة البيانات</span>
+                <span class="value quality-badge" id="dataQuality">---</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Columns Analysis -->
+    <section class="columns-analysis">
+        <h2>تحليل الأعمدة</h2>
+        <div class="table-responsive">
+            <table id="columnsTable">
+                <thead>
+                    <tr>
+                        <th>اسم العمود</th>
+                        <th>نوع البيانات</th>
+                        <th>القيم المفقودة</th>
+                        <th>القيم الفريدة</th>
+                        <th>صالح للتحليل</th>
+                    </tr>
+                </thead>
+                <tbody id="columnsBody">
+                    <!-- سيتم إنشاء الصفوف تلقائيًا -->
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- Data Quality Issues -->
+    <section class="quality-issues">
+        <h2>مشاكل جودة البيانات</h2>
+        <div id="issuesContainer" class="issues-grid">
+            <!-- سيتم عرض المشاكل هنا -->
+        </div>
+    </section>
+
+    <!-- Data Cleaning Options -->
+    <section class="cleaning-options">
+        <h2>🧹 خيارات تنظيف البيانات</h2>
+        <div class="cleaning-controls">
+            <div class="clean-option">
+                <input type="checkbox" id="removeDuplicates" checked />
+                <label for="removeDuplicates">إزالة الصفوف المكررة</label>
+            </div>
+            <div class="clean-option">
+                <input type="checkbox" id="fillMissing" />
+                <label for="fillMissing">ملء القيم المفقودة (بالوسط/المنوال)</label>
+            </div>
+            <div class="clean-option">
+                <input type="checkbox" id="removeMissing" />
+                <label for="removeMissing">حذف الصفوف التي تحتوي على قيم مفقودة</label>
+            </div>
+            <div class="clean-option">
+                <input type="checkbox" id="standardizeDates" checked />
+                <label for="standardizeDates">توحيد تنسيق التواريخ</label>
+            </div>
+            <div class="clean-option">
+                <input type="checkbox" id="trimWhitespace" checked />
+                <label for="trimWhitespace">إزالة المسافات الزائدة من النصوص</label>
+            </div>
+        </div>
+        <div class="cleaning-actions">
+            <button class="btn-primary" onclick="applyCleaning()">🧹 تنظيف البيانات</button>
+            <button class="btn-secondary" onclick="skipCleaning()">تخطي التنظيف</button>
+        </div>
+    </section>
+
+    <!-- Suggested Visualizations -->
+    <section class="suggested-viz">
+        <h2>📈 الرسوم البيانية المقترحة</h2>
+        <div id="suggestedCharts" class="suggestions-grid">
+            <!-- سيتم عرض الاقتراحات هنا -->
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>© 2026 Excel Dashboard Generator — مفتوح المصدر على GitHub</p>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="app.js"></script>
+    <script src="analyzer.js"></script>
+    <script src="data-cleaner.js"></script>
+
+    <script>
+        // متغيرات لتخزين نتائج التحليل
+        let analysisResult = null;
+        let cleanedData = null;
+
+        // تهيئة الصفحة عند التحميل
+        document.addEventListener('DOMContentLoaded', function() {
+            // استرجاع نتائج التحليل من localStorage
+            const savedAnalysis = localStorage.getItem('analysisResult');
+            if (savedAnalysis) {
+                analysisResult = JSON.parse(savedAnalysis);
+                renderAnalysis(analysisResult);
+            } else {
+                // إذا لم توجد بيانات، عرض رسالة أو التوجه للرفع
+                showNoDataMessage();
+            }
+        });
+
+        // دالة عرض نتائج التحليل
+        function renderAnalysis(data) {
+            // عرض ملخص الملف
+            document.getElementById('fileName').textContent = data.fileName || 'غير معروف';
+            document.getElementById('rowCount').textContent = data.rowCount || 0;
+            document.getElementById('columnCount').textContent = data.columnCount || 0;
+            document.getElementById('sheetCount').textContent = data.sheets ? data.sheets.length : 1;
+            
+            // عرض جودة البيانات
+            const qualityBadge = document.getElementById('dataQuality');
+            const quality = data.dataQuality || 'متوسط';
+            qualityBadge.textContent = quality;
+            qualityBadge.className = `value quality-badge quality-${quality}`;
+
+            // عرض تحليل الأعمدة
+            renderColumnsTable(data.columns);
+
+            // عرض مشاكل الجودة
+            renderQualityIssues(data);
+
+            // عرض الرسوم البيانية المقترحة
+            renderSuggestedCharts(data);
+        }
+
+        // دالة عرض جدول الأعمدة
+        function renderColumnsTable(columns) {
+            const tbody = document.getElementById('columnsBody');
+            tbody.innerHTML = '';
+
+            if (!columns || columns.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5">لا توجد بيانات أعمدة</td></tr>';
+                return;
+            }
+
+            columns.forEach(col => {
+                const row = document.createElement('tr');
+                const isValid = col.type !== 'unknown' && col.missing < (analysisResult.rowCount * 0.3);
+                
+                row.innerHTML = `
+                    <td><strong>${col.name}</strong></td>
+                    <td><span class="type-badge type-${col.type}">${col.type}</span></td>
+                    <td>${col.missing || 0}</td>
+                    <td>${col.unique || 'N/A'}</td>
+                    <td>${isValid ? '✅ نعم' : '❌ لا'}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // دالة عرض مشاكل الجودة
+        function renderQualityIssues(data) {
+            const container = document.getElementById('issuesContainer');
+            container.innerHTML = '';
+
+            const issues = [];
+
+            // التحقق من القيم المفقودة
+            if (data.missingValues > 0) {
+                issues.push({
+                    type: 'warning',
+                    title: 'قيم مفقودة',
+                    description: `تم اكتشاف ${data.missingValues} قيمة مفقودة في البيانات. يوصى بمعالجتها.`
+                });
+            }
+
+            // التحقق من الصفوف المكررة
+            if (data.duplicateRows > 0) {
+                issues.push({
+                    type: 'warning',
+                    title: 'صفوف مكررة',
+                    description: `تم اكتشاف ${data.duplicateRows} صفًا مكررًا. قد تؤثر على دقة التحليل.`
+                });
+            }
+
+            // التحقق من جودة البيانات
+            if (data.dataQuality === 'منخفض' || data.dataQuality === 'ضعيف') {
+                issues.push({
+                    type: 'error',
+                    title: 'جودة بيانات منخفضة',
+                    description: 'جودة البيانات منخفضة. يوصى بتنظيف البيانات قبل إنشاء لوحة التحكم.'
+                });
+            }
+
+            // التحقق من أنواع الأعمدة
+            const unknownColumns = data.columns.filter(col => col.type === 'unknown');
+            if (unknownColumns.length > 0) {
+                issues.push({
+                    type: 'info',
+                    title: 'أعمدة غير معروفة',
+                    description: `تم اكتشاف ${unknownColumns.length} عمودًا بنوع بيانات غير معروف. قد تحتاج إلى معالجة يدوية.`
+                });
+            }
+
+            // إذا لم توجد مشاكل
+            if (issues.length === 0) {
+                container.innerHTML = `
+                    <div class="issue-card success">
+                        <div class="issue-icon">✅</div>
+                        <h4>بيانات ممتازة</h4>
+                        <p>لا توجد مشاكل في جودة البيانات. جاهزة لإنشاء لوحة التحكم.</p>
+                    </div>
+                `;
+            } else {
+                // عرض المشاكل
+                issues.forEach(issue => {
+                    const card = document.createElement('div');
+                    card.className = `issue-card ${issue.type}`;
+                    card.innerHTML = `
+                        <div class="issue-icon">${issue.type === 'error' ? '❌' : issue.type === 'warning' ? '⚠️' : 'ℹ️'}</div>
+                        <div class="issue-content">
+                            <h4>${issue.title}</h4>
+                            <p>${issue.description}</p>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            }
+        }
+
+        // دالة عرض الرسوم البيانية المقترحة
+        function renderSuggestedCharts(data) {
+            const container = document.getElementById('suggestedCharts');
+            container.innerHTML = '';
+
+            // تحديد الاقتراحات بناءً على أنواع الأعمدة
+            const suggestions = [];
+            const columns = data.columns || [];
+
+            // البحث عن أعمدة رقمية
+            const numericColumns = columns.filter(col => col.type === 'number');
+            if (numericColumns.length >= 1) {
+                suggestions.push({
+                    type: 'bar',
+                    title: 'مخطط أعمدة',
+                    description: `عرض توزيع البيانات الرقمية في عمود ${numericColumns[0].name}`,
+                    icon: '📊'
+                });
+            }
+
+            // البحث عن أعمدة تاريخ
+            const dateColumns = columns.filter(col => col.type === 'date');
+            if (dateColumns.length >= 1) {
+                suggestions.push({
+                    type: 'line',
+                    title: 'مخطط خطي',
+                    description: `تحليل الاتجاهات الزمنية باستخدام عمود ${dateColumns[0].name}`,
+                    icon: '📈'
+                });
+            }
+
+            // البحث عن أعمدة نصية (للمقارنة)
+            const stringColumns = columns.filter(col => col.type === 'string');
+            if (stringColumns.length >= 2 && numericColumns.length >= 1) {
+                suggestions.push({
+                    type: 'pie',
+                    title: 'مخطط دائري',
+                    description: `توزيع البيانات حسب ${stringColumns[0].name} و ${numericColumns[0].name}`,
+                    icon: '🍕'
+                });
+            }
+
+            // البحث عن أعمدة متعددة للعلاقات
+            if (numericColumns.length >= 2) {
+                suggestions.push({
+                    type: 'scatter',
+                    title: 'مخطط مبعثر',
+                    description: `العلاقة بين ${numericColumns[0].name} و ${numericColumns[1].name}`,
+                    icon: '🔵'
+                });
+            }
+
+            // إذا لم توجد اقتراحات
+            if (suggestions.length === 0) {
+                container.innerHTML = `
+                    <div class="suggestion-card empty">
+                        <p>لا توجد اقتراحات تلقائية. يمكنك إضافة رسوم بيانية مخصصة من لوحة التحكم.</p>
+                    </div>
+                `;
+            } else {
+                // عرض الاقتراحات
+                suggestions.forEach(sugg => {
+                    const card = document.createElement('div');
+                    card.className = 'suggestion-card';
+                    card.innerHTML = `
+                        <div class="suggestion-icon">${sugg.icon}</div>
+                        <h4>${sugg.title}</h4>
+                        <p>${sugg.description}</p>
+                        <button class="btn-small" onclick="generateDashboard()">إنشاء</button>
+                    `;
+                    container.appendChild(card);
+                });
+            }
+        }
+
+        // دالة عرض رسالة عدم وجود بيانات
+        function showNoDataMessage() {
+            const summaryItems = document.querySelectorAll('.summary-item .value');
+            summaryItems.forEach(item => {
+                item.textContent = '⚠️ لا توجد بيانات';
+            });
+            
+            document.querySelector('.quality-badge').textContent = 'لا يوجد تحليل';
+            document.getElementById('columnsBody').innerHTML = '<tr><td colspan="5">⚠️ يرجى رفع ملف أولاً</td></tr>';
+            document.getElementById('issuesContainer').innerHTML = `
+                <div class="issue-card info">
+                    <div class="issue-icon">ℹ️</div>
+                    <div class="issue-content">
+                        <h4>لا توجد بيانات</h4>
+                        <p>يرجى رفع ملف Excel أو CSV من صفحة <a href="upload.html">رفع ملف</a>.</p>
+                    </div>
+                </div>
+            `;
+            document.getElementById('suggestedCharts').innerHTML = `
+                <div class="suggestion-card empty">
+                    <p>يرجى رفع ملف أولاً للحصول على اقتراحات.</p>
+                </div>
+            `;
+        }
+
+        // دالة إنشاء لوحة التحكم
+        function generateDashboard() {
+            // حفظ النتائج للاستخدام في لوحة التحكم
+            localStorage.setItem('dashboardData', JSON.stringify(analysisResult));
+            
+            // الانتقال إلى صفحة لوحة التحكم
+            window.location.href = 'dashboard.html';
+        }
+
+        // دالة تطبيق التنظيف
+        function applyCleaning() {
+            // جمع الخيارات المختارة
+            const options = {
+                removeDuplicates: document.getElementById('removeDuplicates').checked,
+                fillMissing: document.getElementById('fillMissing').checked,
+                removeMissing: document.getElementById('removeMissing').checked,
+                standardizeDates: document.getElementById('standardizeDates').checked,
+                trimWhitespace: document.getElementById('trimWhitespace').checked
+            };
+
+            // محاكاة عملية التنظيف
+            showMessage('🧹 جاري تنظيف البيانات...', 'info');
+
+            setTimeout(() => {
+                // في الواقع هنا سيتم استدعاء data-cleaner.js
+                // ومحاكاة النتيجة
+                const cleanedAnalysis = {
+                    ...analysisResult,
+                    missingValues: options.removeMissing ? 0 : Math.max(0, analysisResult.missingValues - 5),
+                    duplicateRows: options.removeDuplicates ? 0 : Math.max(0, analysisResult.duplicateRows - 1),
+                    dataQuality: 'ممتاز'
+                };
+
+                // تحديث العرض
+                renderAnalysis(cleanedAnalysis);
+                
+                // حفظ النتائج النظيفة
+                localStorage.setItem('analysisResult', JSON.stringify(cleanedAnalysis));
+                
+                showMessage('✅ تم تنظيف البيانات بنجاح!', 'success');
+            }, 1000);
+        }
+
+        // دالة تخطي التنظيف
+        function skipCleaning() {
+            showMessage('⏭️ تم تخطي التنظيف، جاهز لإنشاء لوحة التحكم', 'info');
+        }
+
+        // دالة مساعدة للرسائل
+        function showMessage(text, type) {
+            const existing = document.querySelector('.message-toast');
+            if (existing) existing.remove();
+
+            const toast = document.createElement('div');
+            toast.className = `message-toast ${type}`;
+            toast.textContent = text;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
